@@ -31,3 +31,21 @@ query{
   }
 }
 `;
+
+export const GET_SINGLE_REPOSITORY  = gql`
+query fetchSingleRepo($id:ID!){
+  repository(id:$id){
+    id,
+    fullName,
+    name,
+    ownerName,
+    ownerAvatarUrl,
+    ratingAverage,
+    reviewCount,
+    stargazersCount,
+    description,
+    language,forksCount,
+    watchersCount
+    url
+  }
+}`;

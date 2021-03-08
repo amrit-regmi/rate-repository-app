@@ -1,6 +1,9 @@
 import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { useParams } from 'react-router';
 import { convertToK } from '../helper';
+import * as Linking from 'expo-linking';
+import useSingleRepository from '../hooks/useSingleRepository';
 import theme from '../theme';
 
 const styles = StyleSheet.create({
@@ -78,13 +81,30 @@ const styles = StyleSheet.create({
   itemStatText: {
     fontWeight:'bold' ,
     marginBottom: 5
-  }
+  },
+  button: {
+    alignItems:'center',
+    height:50,
+    paddingVertical:10,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.roundCorner,
+    marginVertical: 10
+   
+  },
+
+  buttonText: {
+   height:50,
+   color: 'white',
+   fontWeight:theme.fontWeights.bold,
+   fontSize: theme.fontSizes.heading,
+   
+ }
 
 });
 
 const ItemStat = ( { statDescription, stat } ) => {
   return (
-    <View style={styles.itemStat}>
+    <View style={styles.itemStat} testID={statDescription}>
       <Text style={styles.itemStatText}>
         {convertToK(stat)}
       </Text>
@@ -94,28 +114,47 @@ const ItemStat = ( { statDescription, stat } ) => {
 };
 
 const RepositoryListItem = (props) => {
+  const params =  useParams();
+  const id = params.id;
+
+  const { repository  } = useSingleRepository({id:id});
+
+  const data =  props.repository || repository ;
+
+  if(!data){
+    return null;
+  }
+
   return( 
     <View style={styles.container}>
       <View style={styles.topContainer}> 
         <View style={styles.avatarContainer} >
-          <Image style={styles.avatar} source={{uri:props.repository.ownerAvatarUrl}}></Image>
+          <Image style={styles.avatar} source={{uri:data.ownerAvatarUrl}}></Image>
         </View>
         <View style={styles.contentContainer}>
-              <Text style={styles.nameText}>{props.repository.fullName}</Text>          
-              <Text style={styles.descriptionText}>{props.repository.description}</Text>
+              <Text testID= 'fullName' style={styles.nameText}>{data.fullName}</Text>          
+              <Text testID= 'description' style={styles.descriptionText}>{data.description}</Text>
               <View style={styles.languageContainer}>
-                 <Text style={styles.languageText}>{props.repository.language}</Text>
+                 <Text testID= 'language' style={styles.languageText}>{data.language}</Text>
               </View>
              
         </View>
       </View>
 
       <View style={styles.bottomContainer}>
-          <ItemStat stat = {props.repository.stargazersCount} statDescription= 'Stars' />
-          <ItemStat stat = {props.repository.forksCount} statDescription= 'Forks' />
-          <ItemStat stat = {props.repository.reviewCount} statDescription= 'Reviews' />
-          <ItemStat stat = {props.repository.ratingAverage} statDescription= 'Rating' />
+          <ItemStat stat = {data.stargazersCount} statDescription= 'Stars' />
+          <ItemStat stat = {data.forksCount} statDescription= 'Forks' />
+          <ItemStat stat = {data.reviewCount} statDescription= 'Reviews' />
+          <ItemStat stat = {data.ratingAverage} statDescription= 'Rating' />
       </View>
+      {id && <TouchableWithoutFeedback onPress={()=> {
+        Linking.openURL(data.url);
+      }}>
+        <View style={styles.button}>
+          <Text style= {styles.buttonText} >Open in Github</Text>
+        </View>
+      </TouchableWithoutFeedback>}
+      
 
     </View>
       )
